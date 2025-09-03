@@ -1,0 +1,64 @@
+# requirements_mongodb_only.txt - MONGODB-ONLY VERSION
+# Complete requirements for MongoDB-Only Voice AI system
+
+# Core LiveKit Dependencies
+livekit-agents[openai,silero,deepgram,elevenlabs,cartesia,turn-detector]>=1.1.0
+livekit-api>=1.0.0
+livekit-protocol>=1.0.0
+
+# Individual LiveKit plugins (in case the bundle doesn't work)
+livekit-plugins-openai
+livekit-plugins-deepgram
+livekit-plugins-elevenlabs
+livekit-plugins-silero
+livekit-plugins-turn-detector
+livekit-plugins-google>=1.0.0
+
+
+# MONGODB DEPENDENCIES (PRIMARY AND ONLY DATABASE)
+pymongo[srv]>=4.6.0
+motor>=3.3.0
+
+# REDIS DEPENDENCIES (CACHING LAYER)
+redis[hiredis]>=5.0.0
+
+# RAG System Dependencies (KNOWLEDGE BASE)
+qdrant-client[async]>=1.14.2
+llama-index-core>=0.11.0
+llama-index-vector-stores-qdrant>=0.3.0
+llama-index-embeddings-openai>=0.2.0
+llama-index-llms-openai>=0.2.0
+
+# AI Dependencies
+openai>=1.3.0
+
+# Essential Dependencies
+python-dotenv>=1.0.0
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+asyncio
+aiofiles
+pandas
+openpyxl
+numpy
+
+# Performance and Monitoring Dependencies
+psutil>=5.9.0
+
+# Development tools
+pytest
+pytest-asyncio
+
+
+
+
+
+# GOOGLE CLOUD DEPENDENCIES
+google-cloud-speech>=2.21.0
+google-auth>=2.0.0
+google-auth-oauthlib>=0.5.0
+google-auth-httplib2>=0.1.0
+
+
+
+

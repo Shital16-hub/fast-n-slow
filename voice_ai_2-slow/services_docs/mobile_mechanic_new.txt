@@ -1,0 +1,21 @@
+SERVICE: Mobile Mechanic Diagnostic Assessment
+BASE_PRICE: 150
+DESCRIPTION: Comprehensive on-site automotive diagnostic and assessment service by certified mobile mechanic with professional diagnostic equipment.
+REQUIREMENTS: Vehicle with mechanical issues, owner present, access to vehicle systems
+TIME: 30-90 minutes for complete assessment
+PRICING_RULES:
+- Daytime service (7:00 AM - 7:00 PM): $150
+- Nighttime service (7:00 PM - 7:00 AM): $300
+- Complex diagnostic assessment: additional $50 for electrical or computer system issues
+- Multi-system diagnosis: additional $75 for comprehensive vehicle inspection
+- Emergency diagnostic: standard time-based pricing applies
+WHAT_IS_INCLUDED: Complete diagnostic assessment, computer system scan, written diagnostic report, repair cost estimate, maintenance recommendations
+DIAGNOSTIC_CAPABILITIES:
+- Engine performance issues
+- Electrical system problems  
+- Transmission concerns
+- Brake system inspection
+- Cooling system assessment
+- Computer diagnostic codes
+- Emissions system evaluation
+ADDITIONAL_NOTES: Assessment fee applied toward repair cost if mobile mechanic performs the repair service. Written diagnostic report provided. Parts ordering and installation services available at additional cost.

@@ -1,0 +1,19 @@
+SERVICE: Winch Out Recovery Service
+BASE_PRICE: 285
+DESCRIPTION: Professional vehicle recovery service for vehicles stuck in mud, snow, sand, or off pavement using heavy-duty winch equipment and recovery techniques.
+REQUIREMENTS: Vehicle stuck or stranded, safe access for recovery vehicle, recovery distance measured from pavement
+TIME: 30-120 minutes depending on conditions and distance
+PRICING_RULES:
+- Fixed base fee: $285 for vehicles up to 10 feet from pavement
+- Additional distance fee: $100 per each additional 10-foot increment (or fraction thereof)
+- Total price formula: $285 + ($100 × number of additional 10-foot increments beyond first 10 feet)
+- Distance measurement: from edge of pavement to vehicle location
+- Difficult terrain surcharge: additional $150 for extreme conditions
+DISTANCE_CALCULATION_EXAMPLES:
+- Vehicle 8 feet from road: $285 (base fee only)
+- Vehicle 15 feet from road: $285 + $100 = $385 (1 additional increment)
+- Vehicle 25 feet from road: $285 + ($100 × 2) = $485 (2 additional increments)
+- Vehicle 35 feet from road: $285 + ($100 × 3) = $585 (3 additional increments)
+- Vehicle 48 feet from road: $285 + ($100 × 4) = $685 (4 additional increments)
+WHAT_IS_INCLUDED: Professional recovery assessment, winch setup, vehicle extraction, basic damage inspection, cleanup of recovery area
+ADDITIONAL_NOTES: Service requires safe access for recovery vehicle. Environmental protection measures included. Damage waiver may be required for high-risk recoveries. Multi-vehicle recovery available with additional charges.

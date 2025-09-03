@@ -1,0 +1,20 @@
+SERVICE: Professional Towing Service
+BASE_PRICE: Hook fee plus mileage charges
+DESCRIPTION: Complete vehicle towing service using professional tow trucks with experienced certified operators for safe vehicle transport.
+REQUIREMENTS: Vehicle to be towed, destination location, clear access for tow truck
+TIME: 30-90 minutes depending on distance and conditions
+PRICING_RULES:
+- Hook Fee (neutral functional): $169
+- Hook Fee (neutral not functional): $189  
+- Short distance mileage rate: $8 per mile
+- Long distance mileage rate: $10 per mile
+- Standard mileage rate: $9 per mile (when distance category not specified)
+- Total price formula: Hook Fee + (Mileage Rate × Distance)
+- Distance calculation: Use Google Maps API for accurate distance measurement
+- If distance calculation fails: prompt customer for approximate mileage
+DISTANCE_CATEGORIES:
+- Short distance: typically under 15 miles, $8 per mile
+- Long distance: typically over 25 miles, $10 per mile  
+- Standard rate: $9 per mile for unspecified distances
+WHAT_IS_INCLUDED: Vehicle hookup, safe transport, unhooking at destination, damage-free towing guarantee
+ADDITIONAL_NOTES: Specialty vehicle towing available with additional equipment charges. Heavy duty towing requires specialized trucks with higher base fees.

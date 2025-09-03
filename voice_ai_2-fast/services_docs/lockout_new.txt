@@ -1,0 +1,13 @@
+SERVICE: Vehicle Lockout Service
+BASE_PRICE: 150
+DESCRIPTION: Professional non-destructive vehicle entry service when keys are locked inside vehicle using specialized locksmith tools.
+REQUIREMENTS: Valid identification, proof of vehicle ownership, no keys accessible
+TIME: 10-25 minutes
+PRICING_RULES:
+- Daytime service (7:00 AM - 7:00 PM): $150
+- Nighttime service (7:00 PM - 7:00 AM): $200
+- Emergency lockout (highway, blocking traffic): priority service, standard rates apply
+- Luxury vehicle lockout: additional $50 surcharge for specialized tools
+- Antique vehicle lockout: additional $75 surcharge and damage waiver required
+WHAT_IS_INCLUDED: Non-destructive entry, lock manipulation, verification of vehicle ownership, basic door mechanism check
+ADDITIONAL_NOTES: Service may be refused without proper identification. Damage waiver required for vehicles over 25 years old. Key replacement service available through mobile locksmith.
