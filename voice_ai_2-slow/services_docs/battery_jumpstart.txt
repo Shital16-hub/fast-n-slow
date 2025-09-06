@@ -6,8 +6,6 @@ TIME: 15-30 minutes
 PRICING_RULES:
 - Daytime service (7:00 AM - 7:00 PM): $150
 - Nighttime service (7:00 PM - 7:00 AM): $200
-- Multiple battery pricing: 2 batteries = $229, 3 batteries = $265, 4 batteries = $295
+- Multiple battery pricing: 2 batteries $229, 3 batteries $265, 4 batteries $295
 - Service includes battery testing and basic electrical system check
-- Distance charges apply for locations over 5 miles from service area
 WHAT_IS_INCLUDED: Battery testing, jump start service, basic electrical system check, battery condition assessment
-ADDITIONAL_NOTES: If battery cannot hold charge, replacement service available. Mobile mechanic assessment recommended for recurring battery problems.

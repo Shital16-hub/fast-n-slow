@@ -1,0 +1,12 @@
+SERVICE: Motorcycle Towing Service
+BASE_PRICE: 125
+DESCRIPTION: Specialized motorcycle towing service using motorcycle-specific equipment and trailers for safe transport without damage.
+REQUIREMENTS: Motorcycle or scooter, accessible location for motorcycle trailer, steering lock accessible
+TIME: 20-40 minutes
+PRICING_RULES:
+- Motorcycle hook fee: $125
+- Sport bike surcharge: additional $25 for sport bikes with fairings
+- Mileage rate: $6 per mile
+- Total cost: Motorcycle Hook Fee + Surcharges + (Mileage Rate × Distance)
+- Multiple motorcycle discount: 10% off each additional motorcycle
+WHAT_IS_INCLUDED: Motorcycle-specific loading equipment, secure tie-down, damage-free transport, motorcycle trailer usage

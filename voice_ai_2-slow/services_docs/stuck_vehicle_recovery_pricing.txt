@@ -1,0 +1,8 @@
+SERVICE: Stuck Vehicle Recovery Pricing
+BASE_PRICE: 285
+DESCRIPTION: Vehicle recovery pricing - $285 base fee for up to 10 feet, $100 per additional 10-foot increment, difficult terrain surcharge $150.
+PRICING_RULES:
+- Fixed base fee: $285 for vehicles up to 10 feet from pavement
+- Additional distance fee: $100 per each additional 10-foot increment
+- Total price formula: $285 + ($100 × number of additional 10-foot increments beyond first 10 feet)
+- Difficult terrain surcharge: additional $150 for extreme conditions

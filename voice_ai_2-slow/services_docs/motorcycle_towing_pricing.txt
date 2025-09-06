@@ -1,0 +1,9 @@
+SERVICE: Motorcycle Towing Pricing
+BASE_PRICE: 125
+DESCRIPTION: Motorcycle towing pricing - hook fee $125, sport bike surcharge $25, mileage rate $6 per mile.
+PRICING_RULES:
+- Motorcycle hook fee: $125
+- Sport bike surcharge: additional $25 for sport bikes with fairings
+- Mileage rate: $6 per mile
+- Total cost: Motorcycle Hook Fee + Surcharges + (Mileage Rate × Distance)
+- Multiple motorcycle discount: 10% off each additional motorcycle

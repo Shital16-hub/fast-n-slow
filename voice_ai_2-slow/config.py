@@ -120,6 +120,28 @@ class LocalLiveKitConfig(BaseSettings):
     
     # ✅ TRANSFER SETTINGS (unchanged)
     auto_transfer_disabled: bool = Field(default=True, env="AUTO_TRANSFER_DISABLED")
+
+    # TRANSFER CONFIGURATION SETTINGS
+    human_agent_number: str = Field(default="+15105550200", env="HUMAN_AGENT_NUMBER")
+    human_agent_extension: str = Field(default="200", env="HUMAN_AGENT_EXTENSION") 
+    transfer_timeout_seconds: int = Field(default=30, env="TRANSFER_TIMEOUT_SECONDS")
+    transfer_enabled: bool = Field(default=True, env="TRANSFER_ENABLED")
+
+    # FusionPBX transfer settings
+    fusionpbx_human_ring_group: str = Field(default="201", env="FUSIONPBX_HUMAN_RING_GROUP")
+    fusionpbx_transfer_context: str = Field(default="default", env="FUSIONPBX_TRANSFER_CONTEXT")
+
+    def get_transfer_config(self) -> dict:
+        """Get transfer configuration for FusionPBX"""
+        return {
+            "human_agent_number": self.human_agent_number,
+            "human_agent_extension": self.human_agent_extension,
+            "ring_group": self.fusionpbx_human_ring_group,
+            "context": self.fusionpbx_transfer_context,
+            "timeout": self.transfer_timeout_seconds,
+            "enabled": self.transfer_enabled
+        }
+
     
     # ✅ PATHS (unchanged)
     @property

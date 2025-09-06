@@ -1,11 +1,10 @@
-# enhanced_kb_indexer.py - COMPREHENSIVE KNOWLEDGE BASE INDEXER
+# enhanced_kb_indexer.py - SIMPLIFIED FOR ALL SERVICES - FIXED SYNTAX
 """
-Enhanced Knowledge Base Indexer for Voice AI Agent
-Indexes services_docs/ and technical_docs/ for optimal voice AI performance
+Simplified Knowledge Base Indexer for ALL roadside services
+No over-engineering - one clean document per service
 """
 import asyncio
 import logging
-import hashlib
 import time
 import re
 from pathlib import Path
@@ -17,23 +16,14 @@ from config import config
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class EnhancedKnowledgeIndexer:
-    """Enhanced indexer for voice AI knowledge base with service-specific optimization"""
+class SimplifiedKnowledgeIndexer:
+    """Simplified indexer for ALL roadside services"""
     
     def __init__(self):
         self.documents = []
-        self.service_categories = {
-            "towing": ["towing", "flatbed", "wheel_lift", "heavy_duty", "light_duty", "medium_duty"],
-            "battery": ["jumpstart", "battery", "change_car_battery"],
-            "tire": ["tire", "flat_tire", "tire_change"],
-            "lockout": ["lockout", "car_lockout"],
-            "fuel": ["fuel"],
-            "recovery": ["recovery", "winch", "off_road"],
-            "emergency": ["emergency", "accident"]
-        }
-    
+        
     def parse_service_file(self, file_path: Path) -> Dict[str, Any]:
-        """Parse structured service file into searchable components"""
+        """Parse any service file into structured data"""
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read().strip()
@@ -44,7 +34,8 @@ class EnhancedKnowledgeIndexer:
                 "description": "",
                 "requirements": "",
                 "time": "",
-                "pricing_rules": []
+                "pricing_rules": [],
+                "raw_content": content
             }
             
             lines = content.split('\n')
@@ -55,6 +46,7 @@ class EnhancedKnowledgeIndexer:
                 if not line:
                     continue
                 
+                # Parse structured sections
                 if line.startswith("SERVICE:"):
                     service_data["service_name"] = line.replace("SERVICE:", "").strip()
                 elif line.startswith("BASE_PRICE:"):
@@ -69,6 +61,9 @@ class EnhancedKnowledgeIndexer:
                     current_section = "pricing_rules"
                 elif current_section == "pricing_rules" and line.startswith("-"):
                     service_data["pricing_rules"].append(line[1:].strip())
+                elif current_section == "pricing_rules" and line and not line.startswith(("WHAT_IS_INCLUDED:", "ADDITIONAL_NOTES:")):
+                    # Continue collecting pricing rules
+                    service_data["pricing_rules"].append(line.strip())
             
             return service_data
             
@@ -76,226 +71,168 @@ class EnhancedKnowledgeIndexer:
             logger.error(f"❌ Error parsing {file_path.name}: {e}")
             return {}
     
-    def create_service_documents(self, service_data: Dict[str, Any], file_name: str) -> List[Dict[str, Any]]:
-        """Create multiple searchable documents from service data"""
-        if not service_data.get("service_name"):
-            return []
-        
-        documents = []
-        service_name = service_data["service_name"]
-        category = self.classify_service_category(service_name)
-        
-        # 1. MAIN SERVICE DOCUMENT (Primary search)
-        main_text = f"{service_name}: {service_data.get('description', '')}. "
-        if service_data.get("base_price"):
-            main_text += f"Base price is ${service_data['base_price']}. "
-        if service_data.get("time"):
-            main_text += f"Service time: {service_data['time']}. "
-        if service_data.get("requirements"):
-            main_text += f"Requirements: {service_data['requirements']}."
-        
-        documents.append({
-            "id": f"{file_name}_main",
-            "text": main_text,
-            "metadata": {
-                "type": "service_main",
-                "service_name": service_name,
-                "category": category,
-                "base_price": service_data.get("base_price", ""),
-                "source": "services_docs",
-                "file": file_name
-            }
-        })
-        
-        # 2. PRICING DOCUMENT (For cost inquiries)
-        if service_data.get("base_price"):
-            pricing_text = f"{service_name} costs ${service_data['base_price']} base price. "
-            if service_data.get("pricing_rules"):
-                pricing_text += "Additional charges: " + ". ".join(service_data["pricing_rules"])
-            
-            documents.append({
-                "id": f"{file_name}_pricing",
-                "text": pricing_text,
-                "metadata": {
-                    "type": "pricing",
-                    "service_name": service_name,
-                    "category": category,
-                    "base_price": service_data.get("base_price", ""),
-                    "source": "services_docs",
-                    "file": file_name
-                }
-            })
-        
-        # 3. CATEGORY DOCUMENT (For category-based searches)
-        category_text = f"{category.title()} service: {service_name}. {service_data.get('description', '')}. "
-        if service_data.get("base_price"):
-            category_text += f"Starting at ${service_data['base_price']}."
-        
-        documents.append({
-            "id": f"{file_name}_category",
-            "text": category_text,
-            "metadata": {
-                "type": "category",
-                "service_name": service_name,
-                "category": category,
-                "base_price": service_data.get("base_price", ""),
-                "source": "services_docs",
-                "file": file_name
-            }
-        })
-        
-        # 4. VEHICLE-SPECIFIC DOCUMENTS (For vehicle type matching)
-        vehicle_keywords = self.extract_vehicle_keywords(service_name)
-        if vehicle_keywords:
-            for vehicle_type in vehicle_keywords:
-                vehicle_text = f"{vehicle_type} {service_name}: {service_data.get('description', '')}. "
-                if service_data.get("base_price"):
-                    vehicle_text += f"Price: ${service_data['base_price']}."
-                
-                documents.append({
-                    "id": f"{file_name}_vehicle_{vehicle_type}",
-                    "text": vehicle_text,
-                    "metadata": {
-                        "type": "vehicle_specific",
-                        "service_name": service_name,
-                        "category": category,
-                        "vehicle_type": vehicle_type,
-                        "base_price": service_data.get("base_price", ""),
-                        "source": "services_docs",
-                        "file": file_name
-                    }
-                })
-        
-        return documents
-    
     def classify_service_category(self, service_name: str) -> str:
-        """Classify service into main categories for agent routing"""
+        """Simple service categorization for ALL services"""
         service_lower = service_name.lower()
         
-        for category, keywords in self.service_categories.items():
-            if any(keyword in service_lower for keyword in keywords):
-                return category
-        
-        return "general"
+        # Map all possible services to categories
+        if any(word in service_lower for word in ["towing", "tow", "transport", "flatbed", "wrecker"]):
+            return "towing"
+        elif any(word in service_lower for word in ["jump", "battery", "jumpstart", "boost"]):
+            return "battery"
+        elif any(word in service_lower for word in ["tire", "flat", "puncture", "spare"]):
+            return "tire"
+        elif any(word in service_lower for word in ["lockout", "locked", "keys", "unlock"]):
+            return "lockout"
+        elif any(word in service_lower for word in ["fuel", "gas", "gasoline", "diesel", "delivery"]):
+            return "fuel"
+        elif any(word in service_lower for word in ["winch", "recovery", "stuck", "off-road"]):
+            return "recovery"
+        elif any(word in service_lower for word in ["mechanic", "diagnostic", "repair", "inspection"]):
+            return "mechanic"
+        else:
+            return "general"
     
-    def extract_vehicle_keywords(self, service_name: str) -> List[str]:
-        """Extract vehicle-specific keywords from service name"""
-        service_lower = service_name.lower()
-        vehicle_types = []
+    def create_single_service_document(self, service_data: Dict[str, Any], file_name: str) -> Dict[str, Any]:
+        """Create ONE optimized document per service - no over-engineering"""
         
-        vehicle_mappings = {
-            "18 wheeler": ["18_wheeler", "semi", "truck"],
-            "semi": ["semi", "truck"],
-            "heavy duty": ["heavy_duty", "truck"],
-            "medium duty": ["medium_duty", "truck"],
-            "light duty": ["light_duty", "car"],
-            "motorcycle": ["motorcycle"],
-            "rv": ["rv", "motorhome"],
-            "motorhome": ["motorhome", "rv"],
-            "bus": ["bus"],
-            "limo": ["limo", "limousine"],
-            "luxury": ["luxury", "exotic"],
-            "construction": ["construction", "equipment"],
-            "commercial": ["commercial", "fleet"]
+        if not service_data.get("service_name"):
+            # Handle unstructured files
+            return self._handle_unstructured_file(service_data, file_name)
+        
+        service_name = service_data["service_name"]
+        base_price = service_data.get("base_price", "")
+        description = service_data.get("description", "")
+        pricing_rules = service_data.get("pricing_rules", [])
+        time_info = service_data.get("time", "")
+        requirements = service_data.get("requirements", "")
+        
+        # Build comprehensive service text
+        text_parts = []
+        
+        # Service name and category
+        category = self.classify_service_category(service_name)
+        text_parts.append(f"{service_name}")
+        
+        # Pricing information (most important for queries)
+        if base_price:
+            if base_price.isdigit():
+                text_parts.append(f"Base price: ${base_price}")
+            else:
+                text_parts.append(f"Pricing: {base_price}")
+        
+        # Description
+        if description:
+            text_parts.append(description)
+        
+        # Detailed pricing rules
+        if pricing_rules:
+            pricing_text = ". ".join(pricing_rules)
+            text_parts.append(f"Pricing details: {pricing_text}")
+        
+        # Time and requirements
+        if time_info:
+            text_parts.append(f"Service time: {time_info}")
+        
+        if requirements:
+            text_parts.append(f"Requirements: {requirements}")
+        
+        # Create final document text
+        document_text = ". ".join(text_parts)
+        
+        return {
+            "id": f"{file_name}_service",
+            "text": document_text,
+            "metadata": {
+                "service_name": service_name,
+                "category": category,
+                "base_price": base_price,
+                "source": "services_docs",
+                "file": file_name,
+                "type": "service"
+            }
         }
-        
-        for key, types in vehicle_mappings.items():
-            if key in service_lower:
-                vehicle_types.extend(types)
-        
-        return list(set(vehicle_types))
     
-    def process_technical_docs(self) -> List[Dict[str, Any]]:
-        """Process technical documentation files"""
-        tech_docs_path = Path("technical_docs")
+    def _handle_unstructured_file(self, service_data: Dict[str, Any], file_name: str) -> Dict[str, Any]:
+        """Handle unstructured files (like technical docs)"""
+        
+        content = service_data.get("raw_content", "")
+        if not content or len(content.strip()) < 50:
+            return None
+        
+        # Try to extract service info from content
+        lines = content.split('\n')
+        title_line = lines[0].strip() if lines else file_name
+        
+        # Determine category from filename or content
+        category = self.classify_service_category(f"{file_name} {content}")
+        
+        return {
+            "id": f"{file_name}_doc",
+            "text": content,
+            "metadata": {
+                "service_name": title_line,
+                "category": category,
+                "source": "technical_docs",
+                "file": file_name,
+                "type": "documentation"
+            }
+        }
+    
+    def process_all_service_files(self) -> List[Dict[str, Any]]:
+        """Process ALL service files in both directories"""
+        
         documents = []
         
-        if not tech_docs_path.exists():
-            logger.warning("⚠️ technical_docs/ directory not found")
-            return []
-        
-        for file_path in tech_docs_path.glob("*.txt"):
-            try:
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    content = f.read().strip()
-                
-                if not content:
-                    continue
-                
-                # Split into sections for better searchability
-                sections = content.split('\n\n')
-                
-                for i, section in enumerate(sections):
-                    if len(section.strip()) < 50:  # Skip very short sections
-                        continue
-                    
-                    doc_id = f"tech_{file_path.stem}_section_{i}"
-                    
-                    documents.append({
-                        "id": doc_id,
-                        "text": section.strip(),
-                        "metadata": {
-                            "type": "technical",
-                            "source": "technical_docs",
-                            "file": file_path.name,
-                            "section": i
-                        }
-                    })
-                
-                logger.info(f"✅ Processed technical doc: {file_path.name} ({len(sections)} sections)")
-                
-            except Exception as e:
-                logger.error(f"❌ Error processing {file_path.name}: {e}")
-        
-        return documents
-    
-    def process_services_docs(self) -> List[Dict[str, Any]]:
-        """Process all service documentation files"""
+        # Process services_docs directory
         services_docs_path = Path("services_docs")
-        documents = []
-        
-        if not services_docs_path.exists():
-            logger.warning("⚠️ services_docs/ directory not found")
-            return []
-        
-        for file_path in services_docs_path.glob("*.txt"):
-            try:
-                service_data = self.parse_service_file(file_path)
-                if service_data:
-                    service_docs = self.create_service_documents(service_data, file_path.stem)
-                    documents.extend(service_docs)
-                    logger.info(f"✅ Processed service: {service_data.get('service_name', file_path.name)} ({len(service_docs)} docs)")
+        if services_docs_path.exists():
+            logger.info("📁 Processing services_docs directory...")
+            
+            for file_path in services_docs_path.glob("*.txt"):
+                try:
+                    service_data = self.parse_service_file(file_path)
+                    if service_data:
+                        doc = self.create_single_service_document(service_data, file_path.stem)
+                        if doc:
+                            documents.append(doc)
+                            logger.info(f"✅ Processed: {service_data.get('service_name', file_path.name)}")
                 
-            except Exception as e:
-                logger.error(f"❌ Error processing {file_path.name}: {e}")
+                except Exception as e:
+                    logger.error(f"❌ Error processing {file_path.name}: {e}")
         
+        # Process technical_docs directory
+        technical_docs_path = Path("technical_docs")
+        if technical_docs_path.exists():
+            logger.info("📁 Processing technical_docs directory...")
+            
+            for file_path in technical_docs_path.glob("*.txt"):
+                try:
+                    service_data = {"raw_content": file_path.read_text(encoding='utf-8')}
+                    doc = self._handle_unstructured_file(service_data, file_path.stem)
+                    if doc:
+                        documents.append(doc)
+                        logger.info(f"✅ Processed technical doc: {file_path.name}")
+                
+                except Exception as e:
+                    logger.error(f"❌ Error processing {file_path.name}: {e}")
+        
+        self.documents = documents
+        logger.info(f"📊 Total documents created: {len(documents)}")
         return documents
     
-    async def index_knowledge_base(self) -> bool:
-        """Index complete knowledge base to Qdrant"""
+    async def index_all_services(self) -> bool:
+        """Index ALL services to Qdrant"""
         try:
-            logger.info("🚀 Starting enhanced knowledge base indexing...")
+            logger.info("🚀 Starting comprehensive service indexing...")
             start_time = time.time()
             
-            # Process services documentation
-            logger.info("📋 Processing services documentation...")
-            service_docs = self.process_services_docs()
-            logger.info(f"✅ Services: {len(service_docs)} documents created")
+            # Process all service files
+            documents = self.process_all_service_files()
             
-            # Process technical documentation
-            logger.info("📘 Processing technical documentation...")
-            tech_docs = self.process_technical_docs()
-            logger.info(f"✅ Technical: {len(tech_docs)} documents created")
-            
-            # Combine all documents
-            all_documents = service_docs + tech_docs
-            self.documents = all_documents
-            
-            if not all_documents:
+            if not documents:
                 logger.error("❌ No documents to index")
                 return False
-            
-            logger.info(f"📊 Total documents to index: {len(all_documents)}")
             
             # Initialize RAG system
             logger.info("🔧 Initializing RAG system...")
@@ -304,16 +241,16 @@ class EnhancedKnowledgeIndexer:
                 logger.error("❌ RAG system initialization failed")
                 return False
             
-            # Index documents
-            logger.info("📤 Indexing documents to Qdrant...")
-            index_success = await simplified_rag.add_documents(all_documents)
+            # Index all documents
+            logger.info(f"📤 Indexing {len(documents)} documents...")
+            index_success = await simplified_rag.add_documents(documents)
             
             if index_success:
                 elapsed = time.time() - start_time
-                logger.info(f"✅ Knowledge base indexed successfully in {elapsed:.1f}s")
+                logger.info(f"✅ ALL services indexed successfully in {elapsed:.1f}s")
                 
-                # Test the knowledge base
-                await self.test_knowledge_base()
+                # Test the indexing
+                await self.test_all_services()
                 
                 return True
             else:
@@ -326,29 +263,29 @@ class EnhancedKnowledgeIndexer:
             logger.error(f"Traceback: {traceback.format_exc()}")
             return False
     
-    async def test_knowledge_base(self):
-        """Test the indexed knowledge base with voice AI scenarios"""
-        logger.info("\n🧪 Testing knowledge base with voice AI scenarios...")
+    async def test_all_services(self):
+        """Test indexing for ALL service types"""
+        logger.info("\n🧪 Testing ALL service types...")
         
+        # Test queries for all service categories
         test_queries = [
-            ("towing cost", "pricing"),
-            ("battery service price", "pricing"),
-            ("tire change", "service"),
-            ("locked out of car", "service"),
-            ("fuel delivery", "service"),
-            ("heavy duty truck towing", "vehicle_specific"),
-            ("motorcycle towing", "vehicle_specific"),
-            ("emergency roadside assistance", "emergency"),
-            ("BMW towing", "luxury"),
-            ("semi truck help", "commercial")
+            ("towing cost", "Should return towing pricing"),
+            ("battery service price", "Should return battery pricing"),
+            ("tire change cost", "Should return tire pricing"),
+            ("lockout service", "Should return lockout pricing"),
+            ("fuel delivery", "Should return fuel pricing"),
+            ("winch out", "Should return recovery pricing"),
+            ("mobile mechanic", "Should return mechanic pricing"),
+            ("heavy duty towing", "Should return heavy duty info"),
+            ("emergency service", "Should return emergency info"),
+            ("roadside assistance", "Should return general info")
         ]
         
-        for query, expected_type in test_queries:
+        for query, description in test_queries:
             try:
-                context = await simplified_rag.retrieve_context(query, max_results=2)
+                context = await simplified_rag.retrieve_context(query, max_results=1)
                 if context and len(context.strip()) > 10:
-                    logger.info(f"✅ '{query}': Found relevant content")
-                    logger.debug(f"   Context: {context[:80]}...")
+                    logger.info(f"✅ '{query}': {context[:80]}...")
                 else:
                     logger.warning(f"⚠️ '{query}': No relevant content found")
             except Exception as e:
@@ -356,40 +293,42 @@ class EnhancedKnowledgeIndexer:
     
     def get_indexing_summary(self) -> Dict[str, Any]:
         """Get comprehensive indexing summary"""
-        service_count = len([d for d in self.documents if d["metadata"]["source"] == "services_docs"])
-        tech_count = len([d for d in self.documents if d["metadata"]["source"] == "technical_docs"])
         
         categories = {}
+        service_count = 0
+        tech_count = 0
+        
         for doc in self.documents:
-            if "category" in doc["metadata"]:
-                cat = doc["metadata"]["category"]
-                categories[cat] = categories.get(cat, 0) + 1
+            metadata = doc.get("metadata", {})
+            category = metadata.get("category", "unknown")
+            source = metadata.get("source", "unknown")
+            
+            categories[category] = categories.get(category, 0) + 1
+            
+            if source == "services_docs":
+                service_count += 1
+            elif source == "technical_docs":
+                tech_count += 1
         
         return {
             "total_documents": len(self.documents),
             "service_documents": service_count,
             "technical_documents": tech_count,
             "categories": categories,
-            "document_types": {
-                "service_main": len([d for d in self.documents if d["metadata"]["type"] == "service_main"]),
-                "pricing": len([d for d in self.documents if d["metadata"]["type"] == "pricing"]),
-                "category": len([d for d in self.documents if d["metadata"]["type"] == "category"]),
-                "vehicle_specific": len([d for d in self.documents if d["metadata"]["type"] == "vehicle_specific"]),
-                "technical": len([d for d in self.documents if d["metadata"]["type"] == "technical"])
-            }
+            "status": "completed" if self.documents else "no_documents"
         }
 
 async def main():
-    """Main indexing function"""
-    print("🚀 ENHANCED VOICE AI KNOWLEDGE BASE INDEXER")
+    """Main indexing function for ALL services"""
+    print("🚀 SIMPLIFIED KNOWLEDGE BASE INDEXER FOR ALL SERVICES")
     print("=" * 60)
-    print("🎯 Target: Voice AI optimized knowledge base")
+    print("🎯 Target: All roadside assistance services")
     print("📁 Sources: services_docs/ + technical_docs/")
     print("💾 Destination: Qdrant vector database")
     print("=" * 60)
     
     try:
-        indexer = EnhancedKnowledgeIndexer()
+        indexer = SimplifiedKnowledgeIndexer()
         
         # Confirm indexing
         response = input("\n⚠️ This will replace your current knowledge base. Continue? [y/N]: ")
@@ -397,8 +336,8 @@ async def main():
             print("❌ Indexing cancelled")
             return
         
-        # Index knowledge base
-        success = await indexer.index_knowledge_base()
+        # Index all services
+        success = await indexer.index_all_services()
         
         # Get summary
         summary = indexer.get_indexing_summary()
@@ -409,28 +348,26 @@ async def main():
         print(f"Total documents: {summary['total_documents']}")
         print(f"Service documents: {summary['service_documents']}")
         print(f"Technical documents: {summary['technical_documents']}")
-        print("\nDocument types:")
-        for doc_type, count in summary['document_types'].items():
-            print(f"  {doc_type}: {count}")
-        
         print("\nService categories:")
         for category, count in summary['categories'].items():
             print(f"  {category}: {count}")
         
         if success:
-            print("\n🎉 KNOWLEDGE BASE INDEXING COMPLETED!")
-            print("\n✅ Your voice AI agent now has:")
-            print("   📋 Complete service catalog with pricing")
-            print("   🎯 Optimized search for voice queries")
-            print("   🚗 Vehicle-specific service matching")
-            print("   💰 Precise pricing information")
-            print("   📞 Ready for customer calls!")
+            print("\n🎉 ALL SERVICES INDEXING COMPLETED!")
+            print("\n✅ Your voice AI now has complete knowledge of:")
+            print("   🚗 Towing services with accurate pricing")
+            print("   🔋 Battery/jumpstart services")
+            print("   🛞 Tire change services")
+            print("   🔐 Lockout services")
+            print("   ⛽ Fuel delivery services")
+            print("   🪝 Winch/recovery services")
+            print("   🔧 Mobile mechanic services")
+            print("   📚 Technical documentation")
             
             print("\n💡 NEXT STEPS:")
-            print("   1. Test your agent: python main.py")
-            print("   2. Make a test call to your number")
-            print("   3. Ask about services: 'How much does towing cost?'")
-            print("   4. Test different scenarios: battery, tire, lockout, etc.")
+            print("   1. Test: python test_rag.py")
+            print("   2. Start voice AI: python main.py start")
+            print("   3. Make test call to verify ALL services work correctly")
         else:
             print("\n❌ INDEXING FAILED")
             print("   Check logs above for details")

@@ -1,0 +1,12 @@
+SERVICE: Emergency Roadside Assistance
+BASE_PRICE: 125
+DESCRIPTION: Priority emergency roadside assistance for urgent situations including highway breakdowns, accident recovery, and high-priority service calls.
+REQUIREMENTS: Emergency situation, safe location or traffic control, immediate response needed
+TIME: 15-45 minutes priority response
+PRICING_RULES:
+- Emergency service base fee: $125
+- Highway emergency surcharge: additional $75 for interstate/freeway service
+- Accident scene service: additional $100 for traffic-involved incidents
+- Priority dispatch: guaranteed 30-minute response time
+- Standard services at emergency rates: towing, battery, tire, lockout pricing applies
+WHAT_IS_INCLUDED: Priority dispatch, emergency response, traffic safety measures, coordination with emergency services if needed

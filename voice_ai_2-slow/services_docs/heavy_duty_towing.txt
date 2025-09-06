@@ -1,0 +1,13 @@
+SERVICE: Heavy Duty Towing Service
+BASE_PRICE: 350
+DESCRIPTION: Specialized heavy duty towing service for large vehicles, commercial trucks, RVs, and equipment using heavy duty tow trucks and specialized equipment.
+REQUIREMENTS: Heavy duty vehicle or equipment, specialized towing equipment needed, clear access for heavy duty tow truck
+TIME: 45-120 minutes depending on vehicle size and conditions
+PRICING_RULES:
+- Heavy duty hook fee: $350 base fee
+- Commercial vehicle surcharge: additional $100 for commercial trucks
+- Oversized vehicle fee: additional $150 for vehicles over 26,000 lbs
+- Heavy duty mileage rate: $15 per mile
+- Total cost: Heavy Duty Hook Fee + Surcharges + (Mileage Rate × Distance)
+- Specialized equipment fee: additional charges for rotator or heavy wrecker use
+WHAT_IS_INCLUDED: Heavy duty vehicle hookup, specialized equipment usage, safe transport, professional heavy duty operators

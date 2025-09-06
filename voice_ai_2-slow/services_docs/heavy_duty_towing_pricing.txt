@@ -1,0 +1,9 @@
+SERVICE: Heavy Duty Towing Pricing
+BASE_PRICE: 350
+DESCRIPTION: Heavy duty towing pricing - base fee $350, commercial vehicle surcharge $100, oversized vehicle fee $150, mileage rate $15 per mile.
+PRICING_RULES:
+- Heavy duty hook fee: $350 base fee
+- Commercial vehicle surcharge: additional $100 for commercial trucks
+- Oversized vehicle fee: additional $150 for vehicles over 26,000 lbs
+- Heavy duty mileage rate: $15 per mile
+- Total cost: Heavy Duty Hook Fee + Surcharges + (Mileage Rate × Distance)

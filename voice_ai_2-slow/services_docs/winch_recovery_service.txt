@@ -9,11 +9,4 @@ PRICING_RULES:
 - Total price formula: $285 + ($100 × number of additional 10-foot increments beyond first 10 feet)
 - Distance measurement: from edge of pavement to vehicle location
 - Difficult terrain surcharge: additional $150 for extreme conditions
-DISTANCE_CALCULATION_EXAMPLES:
-- Vehicle 8 feet from road: $285 (base fee only)
-- Vehicle 15 feet from road: $285 + $100 = $385 (1 additional increment)
-- Vehicle 25 feet from road: $285 + ($100 × 2) = $485 (2 additional increments)
-- Vehicle 35 feet from road: $285 + ($100 × 3) = $585 (3 additional increments)
-- Vehicle 48 feet from road: $285 + ($100 × 4) = $685 (4 additional increments)
 WHAT_IS_INCLUDED: Professional recovery assessment, winch setup, vehicle extraction, basic damage inspection, cleanup of recovery area
-ADDITIONAL_NOTES: Service requires safe access for recovery vehicle. Environmental protection measures included. Damage waiver may be required for high-risk recoveries. Multi-vehicle recovery available with additional charges.

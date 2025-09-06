@@ -1,0 +1,8 @@
+SERVICE: Highway Emergency Service Pricing
+BASE_PRICE: 125
+DESCRIPTION: Highway emergency service pricing - $125 base fee, highway surcharge $75, accident scene service $100 additional.
+PRICING_RULES:
+- Emergency service base fee: $125
+- Highway emergency surcharge: additional $75 for interstate/freeway service
+- Accident scene service: additional $100 for traffic-involved incidents
+- Priority dispatch: guaranteed 30-minute response time

@@ -1,0 +1,8 @@
+SERVICE: Flat Tire Service Pricing
+BASE_PRICE: 165
+DESCRIPTION: Flat tire change service pricing - $165 daytime, $200 nighttime, additional surcharges for special tires.
+PRICING_RULES:
+- Daytime service (7:00 AM - 7:00 PM): $165
+- Nighttime service (7:00 PM - 7:00 AM): $200
+- Run-flat tire service: additional $25 surcharge
+- Wheel lock removal: additional $35 if special key not available

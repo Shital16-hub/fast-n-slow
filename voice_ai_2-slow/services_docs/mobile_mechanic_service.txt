@@ -10,12 +10,3 @@ PRICING_RULES:
 - Multi-system diagnosis: additional $75 for comprehensive vehicle inspection
 - Emergency diagnostic: standard time-based pricing applies
 WHAT_IS_INCLUDED: Complete diagnostic assessment, computer system scan, written diagnostic report, repair cost estimate, maintenance recommendations
-DIAGNOSTIC_CAPABILITIES:
-- Engine performance issues
-- Electrical system problems  
-- Transmission concerns
-- Brake system inspection
-- Cooling system assessment
-- Computer diagnostic codes
-- Emissions system evaluation
-ADDITIONAL_NOTES: Assessment fee applied toward repair cost if mobile mechanic performs the repair service. Written diagnostic report provided. Parts ordering and installation services available at additional cost.

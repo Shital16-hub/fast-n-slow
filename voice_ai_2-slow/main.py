@@ -1,6 +1,6 @@
-# main.py - OPTIMIZED FOR ULTRA-LOW LATENCY
+# main.py - FIXED VERSION - OPTIMIZED FOR ULTRA-LOW LATENCY
 """
-OPTIMIZED: Ultra-fast main.py with minimal overhead and optimized initialization
+FIXED: Ultra-fast main.py with minimal overhead and optimized initialization
 Target: 40-60% total system latency reduction through optimized components
 """
 import asyncio
@@ -38,6 +38,12 @@ from call_transcription_storage import get_call_storage
 from simple_rag_v2 import simplified_rag
 from models.call_data import CallData
 
+# NEW: Import transfer handler
+from utils.transfer_handler import call_transfer_handler
+
+# NEW: Import transcript indexer
+from transcript_indexer import TranscriptIndexer
+
 # Performance tracking
 session_start_time = time.time()
 performance_logger = logging.getLogger("performance")
@@ -54,8 +60,42 @@ def prewarm(proc):
     except Exception:
         pass  # Silent fail for maximum speed
 
+async def start_transcript_indexer():
+    """Start transcript indexer as a background task"""
+    try:
+        performance_logger.warning("🔄 Starting transcript indexer background service...")
+        
+        indexer = TranscriptIndexer()
+        
+        # Initialize indexer
+        if not await indexer.initialize():
+            performance_logger.warning("⚠️ Transcript indexer failed to initialize - continuing without it")
+            return None
+        
+        async def indexer_loop():
+            """Background loop for transcript indexing"""
+            interval_seconds = 120  # 2 minutes
+            
+            while True:
+                try:
+                    await indexer.run_batch_processing()
+                    await asyncio.sleep(interval_seconds)
+                except Exception as e:
+                    performance_logger.error(f"❌ Transcript indexer error: {e}")
+                    await asyncio.sleep(30)  # Wait 30s on error
+        
+        # Start indexer as background task
+        indexer_task = asyncio.create_task(indexer_loop())
+        performance_logger.warning("✅ Transcript indexer started as background service")
+        
+        return indexer_task
+        
+    except Exception as e:
+        performance_logger.warning(f"⚠️ Could not start transcript indexer: {e}")
+        return None
+
 async def entrypoint(ctx: JobContext):
-    """OPTIMIZED: Ultra-fast entrypoint with minimal latency"""
+    """FIXED: Ultra-fast entrypoint with proper session management"""
     
     entry_start = time.time()
     
@@ -63,11 +103,20 @@ async def entrypoint(ctx: JobContext):
         # STEP 1: Connect to room immediately (no delays)
         await ctx.connect()
         connect_time = (time.time() - entry_start) * 1000
+        performance_logger.info(f"📡 Connected in {connect_time:.1f}ms")
+        
+        # NEW: Start transcript indexer as background service
+        indexer_task = await start_transcript_indexer()
         
         # STEP 2: Initialize storage with async pattern
         storage_start = time.time()
         storage = await get_call_storage()
         storage_time = (time.time() - storage_start) * 1000
+        
+        # NEW: Initialize transfer handler
+        transfer_init_start = time.time()
+        await call_transfer_handler.initialize()
+        transfer_init_time = (time.time() - transfer_init_start) * 1000
         
         # STEP 3: Initialize RAG system (async)
         rag_start = time.time()
@@ -94,42 +143,48 @@ async def entrypoint(ctx: JobContext):
         transcription_handler.setup_handlers(session)
         transcription_time = (time.time() - transcription_start) * 1000
         
-        # STEP 8: Create optimized agent
+        # STEP 8: Create optimized agent with transfer handler
         agent_start = time.time()
         initial_agent = OptimizedIntelligentDispatcherAgent(call_data)
+        # Pass transfer handler to agent
+        initial_agent.transfer_handler = call_transfer_handler
         agent_time = (time.time() - agent_start) * 1000
         
-        # STEP 9: Start session
+        # CRITICAL FIX: Start session BEFORE generating greeting
         start_session_start = time.time()
         await session.start(agent=initial_agent, room=ctx.room)
         start_session_time = (time.time() - start_session_start) * 1000
         
-        # STEP 10: MINIMAL greeting to prevent timeout
+        # WAIT for session to be fully ready
+        await asyncio.sleep(0.5)  # Give session time to initialize
+        
+        # STEP 9: FIXED greeting (AFTER session is started)
         greeting_start = time.time()
         
         try:
-            # CRITICAL: Use asyncio timeout to prevent hanging
+            # FIXED: Remove is_started check and just try to deliver greeting
             await asyncio.wait_for(
                 session.generate_reply(
-                    instructions="Say: 'Hello, this is Mark from General Towing. What's your name?'"
+                    instructions="Say: 'Hello, thank you for calling General Towing & Roadside Assistance! I'm Mark, and I'm here to help you today. May I please get your full name so I can better assist you?'"
                 ),
-                timeout=3.0  # 3 second timeout
+                timeout=5.0
             )
             greeting_time = (time.time() - greeting_start) * 1000
+            performance_logger.info(f"✅ Greeting delivered in {greeting_time:.1f}ms")
+            
         except asyncio.TimeoutError:
             greeting_time = (time.time() - greeting_start) * 1000
             performance_logger.error(f"❌ Greeting timeout after {greeting_time:.1f}ms")
-            # Don't fail the entire system, just continue without greeting
         except Exception as e:
             greeting_time = (time.time() - greeting_start) * 1000
-            performance_logger.error(f"❌ Greeting error after {greeting_time:.1f}ms: {e}")
-            # Continue without greeting
+            performance_logger.error(f"❌ Greeting error: {e}")
         
         # PERFORMANCE SUMMARY
         total_time = (time.time() - entry_start) * 1000
         performance_logger.warning(f"⚡ ULTRA-FAST INITIALIZATION COMPLETE: {total_time:.1f}ms")
         performance_logger.warning(f"   📡 Connect: {connect_time:.1f}ms")
         performance_logger.warning(f"   💾 Storage: {storage_time:.1f}ms") 
+        performance_logger.warning(f"   🔄 Transfer Init: {transfer_init_time:.1f}ms")
         performance_logger.warning(f"   🔍 RAG: {rag_time:.1f}ms")
         performance_logger.warning(f"   📞 Session Data: {session_data_time:.1f}ms")
         performance_logger.warning(f"   ⚙️ Session: {session_time:.1f}ms")
@@ -137,6 +192,7 @@ async def entrypoint(ctx: JobContext):
         performance_logger.warning(f"   🧠 Agent: {agent_time:.1f}ms")
         performance_logger.warning(f"   🚀 Start: {start_session_time:.1f}ms")
         performance_logger.warning(f"   👋 Greeting: {greeting_time:.1f}ms")
+        performance_logger.warning(f"   🎯 Session Started: True")
         
         # Setup cleanup handlers
         @session.on("close")
@@ -144,6 +200,10 @@ async def entrypoint(ctx: JobContext):
             asyncio.create_task(transcription_handler.save_final_transcript())
             asyncio.create_task(transcription_handler.cleanup())
             transcription_handler.print_conversation_transcript()
+            
+            # Cancel indexer task if it exists
+            if indexer_task and not indexer_task.done():
+                indexer_task.cancel()
         
     except Exception as e:
         error_time = (time.time() - entry_start) * 1000
@@ -235,7 +295,9 @@ class PerformanceMonitor:
                 "async_database_operations",
                 "single_rag_queries",
                 "consolidated_context",
-                "minimal_logging"
+                "minimal_logging",
+                "call_transfer_capability",
+                "transcript_indexing"
             ],
             "target_metrics": {
                 "initialization_time": "< 500ms",
@@ -257,6 +319,8 @@ if __name__ == "__main__":
         print("✅ Target: <1.5s total response time")
         print("✅ LiveKit URL: ws://localhost:7880")
         print("✅ Mode: Ultra-Fast Performance")
+        print("✅ Feature: Call Transfer Capability")
+        print("✅ Auto-Start: Transcript Indexer (LogicalCRM API)")
         print("=" * 50)
         
         # Create optimized worker options
@@ -272,6 +336,7 @@ if __name__ == "__main__":
         startup_time = (time.time() - startup_start) * 1000
         print(f"⚡ System startup complete in {startup_time:.1f}ms")
         print("🚀 Ready for ultra-fast voice calls!")
+        print("📡 Transcript indexer will start with first call")
         
         cli.run_app(worker_options)
         

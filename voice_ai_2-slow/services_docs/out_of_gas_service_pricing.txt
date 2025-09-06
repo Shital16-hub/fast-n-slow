@@ -1,0 +1,8 @@
+SERVICE: Out of Gas Service Pricing
+BASE_PRICE: 199
+DESCRIPTION: Emergency fuel delivery pricing - $199 base fee plus fuel cost, first 5 miles included, $5 per additional mile.
+PRICING_RULES:
+- Base service fee: $199 plus cost of fuel
+- Distance allowance: first 5 miles included in base price
+- Additional mileage: $5 per mile for distances over 5 miles
+- Total price if distance over 5 miles: $199 + fuel cost + ($5 × (distance - 5))

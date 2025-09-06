@@ -1,0 +1,8 @@
+SERVICE: Dead Battery Service Pricing
+BASE_PRICE: 150
+DESCRIPTION: Dead battery jumpstart service pricing - $150 daytime, $200 nighttime, multiple battery pricing available.
+PRICING_RULES:
+- Daytime service (7:00 AM - 7:00 PM): $150
+- Nighttime service (7:00 PM - 7:00 AM): $200
+- Multiple battery pricing: 2 batteries $229, 3 batteries $265, 4 batteries $295
+- Service includes battery testing and basic electrical system check

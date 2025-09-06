@@ -1,7 +1,6 @@
-# agents/dispatcher.py - FIXED VERSION
+# agents/dispatcher.py - COMPLETE VERSION WITH TRANSFER FUNCTIONALITY AND DEBUG
 """
-FIXED: Ultra-fast IntelligentDispatcherAgent with corrected store_info function
-The issue was that all parameters were required but should be optional
+COMPLETE: Ultra-fast IntelligentDispatcherAgent with transfer functionality and debug
 """
 import asyncio
 import datetime
@@ -11,6 +10,8 @@ from typing import Annotated, Dict, Any, Optional
 from pydantic import Field
 
 from livekit.agents import Agent, RunContext, ChatContext, ChatMessage, function_tool
+from livekit.agents import get_job_context
+from livekit import rtc
 
 from logging_config import create_call_logger
 from models.call_data import CallData
@@ -24,7 +25,7 @@ PRICING_CACHE = {}
 CACHE_MAX_SIZE = 100
 
 class OptimizedIntelligentDispatcherAgent(Agent):
-    """FIXED: Ultra-fast LLM brain with corrected function parameters"""
+    """COMPLETE: Ultra-fast LLM brain with transfer functionality and debug"""
 
     def __init__(self, call_data: CallData):
         self.call_data = call_data
@@ -40,7 +41,7 @@ class OptimizedIntelligentDispatcherAgent(Agent):
         is_weekend = current_time.weekday() >= 5
         time_context = f"Current time: {current_time.strftime('%A, %I:%M %p')} - {'Night service' if is_night else 'Day service'}, {'Weekend' if is_weekend else 'Weekday'}"
 
-        # YOUR EXACT SPECIFIED INSTRUCTIONS
+        # YOUR EXACT SPECIFIED INSTRUCTIONS WITH TRANSFER CAPABILITY
         instructions = f"""You are Mark, an intelligent dispatcher for General Towing & Roadside Assistance.
 
 🧠 YOU ARE THE BRAIN: Use your intelligence to:
@@ -48,6 +49,7 @@ class OptimizedIntelligentDispatcherAgent(Agent):
 - Calculate pricing based on service data + time/day surcharges
 - Make decisions about service requirements (standard vs heavy_duty)
 - Present information clearly and professionally
+- Transfer calls to human agents when requested
 
 ⏰ TIME CONTEXT: {time_context}
 📞 NOTE: Always ask for customer's actual phone number (system number is forwarded)
@@ -82,10 +84,6 @@ class OptimizedIntelligentDispatcherAgent(Agent):
        • Present a clear price breakdown and ask to proceed
    - If STANDARD: Continue to location step and price the same way.
 
-   EXAMPLES:
-   - "2023 bus" = HEAVY DUTY → Ask service type → Continue to location → Pull heavy-duty pricing via RAG → Present total
-   - "BMW X Series" = STANDARD → Continue to location → Pricing via RAG → Present total
-
 4. VEHICLE LOCATION:
    "What is the exact location of your vehicle? Please provide the full street address, city, and any nearby landmarks if possible. Accurate location details help us dispatch assistance quickly."
    Confirm: "So your vehicle is at [location]. Is that correct?"
@@ -104,13 +102,16 @@ class OptimizedIntelligentDispatcherAgent(Agent):
    - Weekend surcharge
    - Present clearly with breakdown
 
-   If RAG returns a range or starting rate, present the best-available figure and explain briefly:
-   "For heavy-duty towing, pricing starts at $X based on our guidelines. With night/weekend adjustments, today's total is $Y."
-
 7. COMPLETION:
    If accepted: "Great! I'll dispatch the nearest available unit and share the ETA."
    If customer asks to compare/confirm: Summarize the math again and ask for confirmation to proceed.
    If declined: "Thank you for calling. Please feel free to call us back if you change your mind."
+
+🔄 TRANSFER TO HUMAN AGENT:
+If customer requests to speak with a human, agent, person, representative, or says "transfer":
+- Use transfer_to_human_agent() immediately
+- Don't ask follow-up questions about the transfer request
+- The system will handle the transfer to extension 201
 
 🧠 PRICING INTELLIGENCE:
 When you get pricing data from search_knowledge():
@@ -125,15 +126,15 @@ When you get pricing data from search_knowledge():
    - Calculate final pricing
    - Present clearly with breakdown
 3. Present like: "For your 2020 Honda Civic towing, the cost will be $90 (base $75 plus $15 night service charge according to our pricing guidelines)."
-4. Trust the RAG system for pricing rules - don't override with hardcoded values. If heavy-duty rates are separate, use them; if absent, use best-available guideline and state that clearly.
 
 🔧 TOOLS:
 - store_info(): Store customer data as collected (ALL PARAMETERS ARE OPTIONAL!)
 - vehicle_size_tool(): Determine vehicle classification and store it for pricing logic
 - search_knowledge(): Get pricing data from knowledge base
+- transfer_to_human_agent(): Transfer call to human agent when requested
 - Your BRAIN: Process the data and calculate intelligent final pricing
 
-NEVER say "routing" or "transferring" - you handle everything intelligently.
+NEVER say "routing" or "transferring" - you handle everything intelligently unless specifically transferring to human.
 
 🚨 CRITICAL CONVERSATION CONTINUITY:
 - NEVER restart the conversation if customer says "hello", "are you there", etc.
@@ -144,12 +145,23 @@ NEVER say "routing" or "transferring" - you handle everything intelligently.
         return instructions
 
     async def on_user_turn_completed(self, turn_ctx: ChatContext, new_message: ChatMessage) -> None:
-        """Inject context with timeout protection to prevent hanging"""
+        """Enhanced context injection with transfer detection and debug"""
         try:
             start_time = time.time()
             user_text = new_message.text_content
             
             if not user_text or len(user_text.strip()) < 2:
+                return
+
+            # CRITICAL DEBUG: Log what the user said
+            agent_logger.info(f"🔍 Processing user input: '{user_text}'")
+
+            # Check for transfer request FIRST
+            if self._should_transfer_to_human(user_text):
+                turn_ctx.add_message(
+                    role="system", 
+                    content=f"User requested human agent: '{user_text}'. Use transfer_to_human_agent() to transfer the call immediately."
+                )
                 return
 
             # TIMEOUT PROTECTION: Add timeout to context processing
@@ -161,6 +173,9 @@ NEVER say "routing" or "transferring" - you handle everything intelligently.
                 
                 context_time = (time.time() - start_time) * 1000
                 agent_logger.debug(f"⚡ Context processed in {context_time:.1f}ms")
+                
+                # ADD THIS CRITICAL DEBUG:
+                agent_logger.info(f"🎯 TRIGGERING LLM RESPONSE GENERATION NOW")
                 
             except asyncio.TimeoutError:
                 context_time = (time.time() - start_time) * 1000
@@ -176,9 +191,6 @@ NEVER say "routing" or "transferring" - you handle everything intelligently.
     async def _process_user_message(self, turn_ctx: ChatContext, new_message: ChatMessage):
         """Process user message with full context (wrapped with timeout)"""
         user_text = new_message.text_content
-        
-        # CRITICAL DEBUG: Log what the user said
-        agent_logger.info(f"🔍 Processing user input: '{user_text}'")
         
         # Current session context
         context_parts = []
@@ -229,6 +241,17 @@ NEVER say "routing" or "transferring" - you handle everything intelligently.
             return "IDENTIFY_SERVICE"
         else:
             return "PROVIDE_PRICING"
+
+    def _should_transfer_to_human(self, user_message: str) -> bool:
+        """Check if user is requesting human agent"""
+        transfer_keywords = [
+            "human", "agent", "person", "transfer", "speak with",
+            "talk to", "customer service", "representative", "supervisor",
+            "human nature", "actual person", "real person", "operator",
+            "connect me", "get me to", "escalate"
+        ]
+        user_lower = user_message.lower()
+        return any(keyword in user_lower for keyword in transfer_keywords)
 
     @function_tool()
     async def store_info(
@@ -348,7 +371,7 @@ NEVER say "routing" or "transferring" - you handle everything intelligently.
         context: RunContext[CallData],
         query: str
     ) -> str:
-        """OPTIMIZED: Single fast knowledge search with smart caching"""
+        """OPTIMIZED: Single fast knowledge search with smart caching and debug"""
         try:
             start_time = time.time()
             
@@ -386,12 +409,17 @@ NEVER say "routing" or "transferring" - you handle everything intelligently.
                 if rag_context and len(rag_context.strip()) > 15:
                     search_time = (time.time() - start_time) * 1000
                     
+                    # ADD THESE DEBUG LINES:
+                    agent_logger.info(f"🎯 RAG CONTEXT FOUND: {rag_context[:100]}...")
+                    return_value = f"PRICING INFORMATION: {rag_context}"
+                    agent_logger.info(f"🔄 RETURNING TO LLM: {return_value[:100]}...")
+                    
                     # Cache successful results
                     if len(PRICING_CACHE) < CACHE_MAX_SIZE:
-                        PRICING_CACHE[cache_key] = rag_context
+                        PRICING_CACHE[cache_key] = return_value
                     
                     agent_logger.info(f"✅ Knowledge retrieved in {search_time:.1f}ms")
-                    return f"PRICING INFORMATION: {rag_context}"
+                    return return_value
                 else:
                     agent_logger.warning(f"⚠️ No knowledge found for: {optimized_query}")
                     return f"Service available for {vehicle_class} {service_type}. Please check with dispatch for current pricing."
@@ -403,6 +431,97 @@ NEVER say "routing" or "transferring" - you handle everything intelligently.
         except Exception as e:
             agent_logger.error(f"❌ Knowledge search error: {e}")
             return f"Service available. Standard pricing applies."
+
+    @function_tool()
+    async def transfer_to_human_agent(
+        self, 
+        context: RunContext[CallData],
+        reason: str = "Customer requested human assistance"
+    ) -> str:
+        """Transfer call to human agent with correct participant detection"""
+        try:
+            # Import here to avoid circular imports
+            from utils.transfer_handler import call_transfer_handler
+            
+            # Inform customer
+            await context.session.generate_reply(
+                instructions="Say: 'I'm transferring you to a human agent now. Please hold.'"
+            )
+            
+            # Wait for the message to play
+            await asyncio.sleep(2)
+            
+            # Get job context and room
+            job_ctx = get_job_context()
+            room_name = job_ctx.room.name
+            
+            # Debug: Log all participants
+            agent_logger.info(f"🔍 Room participants debug:")
+            agent_logger.info(f"   Room name: {room_name}")
+            
+            # Find the SIP participant
+            sip_participant = None
+            
+            # Look through remote participants in the room
+            for participant in job_ctx.room.remote_participants.values():
+                agent_logger.info(f"   Remote participant: {participant.identity}, kind: {participant.kind}")
+                
+                # Check for SIP participant using the correct enum
+                if participant.kind == rtc.ParticipantKind.PARTICIPANT_KIND_SIP:
+                    sip_participant = participant
+                    agent_logger.info(f"✅ Found SIP participant: {participant.identity}")
+                    break
+            
+            # If no SIP participant found, get the first non-agent participant
+            if not sip_participant:
+                for participant in job_ctx.room.remote_participants.values():
+                    # Skip agent participants - look for standard participants  
+                    if participant.kind == rtc.ParticipantKind.PARTICIPANT_KIND_STANDARD:
+                        sip_participant = participant
+                        agent_logger.info(f"✅ Found standard participant: {participant.identity}")
+                        break
+            
+            # Final fallback - get any remote participant
+            if not sip_participant and job_ctx.room.remote_participants:
+                sip_participant = list(job_ctx.room.remote_participants.values())[0]
+                agent_logger.info(f"✅ Using first available participant: {sip_participant.identity}")
+            
+            if not sip_participant:
+                agent_logger.error("❌ No participant found for transfer")
+                await context.session.generate_reply(
+                    instructions="Say: 'I'm sorry, I can't transfer the call right now. Let me continue helping you.'"
+                )
+                return "No participant found for transfer"
+            
+            participant_identity = sip_participant.identity
+            
+            agent_logger.info(f"🔄 Executing transfer: room={room_name}, participant={participant_identity}")
+            
+            # Execute transfer
+            result = await call_transfer_handler.transfer_to_human(room_name, participant_identity)
+            
+            # Check string result, not enum
+            if result["result"] == "success":
+                agent_logger.info("✅ Transfer completed successfully")
+                return "Transfer completed successfully"
+            else:
+                agent_logger.error(f"❌ Transfer failed: {result['message']}")
+                await context.session.generate_reply(
+                    instructions="Say: 'I'm sorry, I couldn't connect you to an agent right now. Let me continue helping you.'"
+                )
+                return f"Transfer failed: {result['message']}"
+                
+        except Exception as e:
+            agent_logger.error(f"❌ Transfer error: {e}")
+            
+            try:
+                await context.session.generate_reply(
+                    instructions="Say: 'I'm having trouble connecting you to an agent. Let me continue helping you with your request.'"
+                )
+            except:
+                pass
+                
+            return f"Transfer error: {e}"
 
     async def _save_to_database(self, userdata, updates):
         """OPTIMIZED: Async non-blocking database save"""
@@ -428,7 +547,9 @@ NEVER say "routing" or "transferring" - you handle everything intelligently.
                 "single_rag_search",
                 "smart_caching",
                 "async_database_writes",
-                "fast_vehicle_classification"
+                "fast_vehicle_classification",
+                "human_transfer_capability",
+                "debug_logging"
             ]
         }
 

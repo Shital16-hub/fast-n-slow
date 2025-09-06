@@ -10,4 +10,3 @@ PRICING_RULES:
 - Luxury vehicle lockout: additional $50 surcharge for specialized tools
 - Antique vehicle lockout: additional $75 surcharge and damage waiver required
 WHAT_IS_INCLUDED: Non-destructive entry, lock manipulation, verification of vehicle ownership, basic door mechanism check
-ADDITIONAL_NOTES: Service may be refused without proper identification. Damage waiver required for vehicles over 25 years old. Key replacement service available through mobile locksmith.
